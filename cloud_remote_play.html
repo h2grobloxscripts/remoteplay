@@ -120,20 +120,24 @@ video.addEventListener("mousemove", event => {
   pendingMouse = event;
 });
 
-setInterval(() => {
-  if (!pendingMouse) return;
+function flushMouse() {
+  if (pendingMouse) {
+    const p = getVideoCoordinates(pendingMouse);
+    pendingMouse = null;
 
-  const p = getVideoCoordinates(pendingMouse);
-  pendingMouse = null;
+    if (p) {
+      sendInput({
+        type: "mouse_move",
+        x: p.x,
+        y: p.y
+      });
+    }
+  }
 
-  if (!p) return;
+  requestAnimationFrame(flushMouse);
+}
 
-  sendInput({
-    type: "mouse_move",
-    x: p.x,
-    y: p.y
-  });
-}, 16);
+requestAnimationFrame(flushMouse);
 
 video.addEventListener("mousedown", event => {
   event.preventDefault();
